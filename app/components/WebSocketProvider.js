@@ -18,7 +18,7 @@ export function WebSocketProvider({ children }) {
 
     const wsRef = useRef(null);
     const demoIntervalRef = useRef(null);
-    const DEFAULT_WS_URL = 'ws://localhost:8765';
+    const DEFAULT_WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8765';
 
     // Fetch initial history from DB on mount
     useEffect(() => {

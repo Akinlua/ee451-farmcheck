@@ -19,7 +19,8 @@ export async function POST(req) {
 
         // Broadcast to WebSocket clients
         try {
-            await fetch('http://localhost:8765/broadcast', {
+            const broadcastUrl = process.env.BROADCAST_URL || 'http://localhost:8765/broadcast';
+            await fetch(broadcastUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...savedScan, timestamp: scan.timestamp.toISOString() })

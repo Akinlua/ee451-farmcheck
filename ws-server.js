@@ -5,6 +5,10 @@ console.log('Starting Test WebSocket Server + HTTP Broadcast endpoint...');
 
 // Create an HTTP server so our Next.js API route can easily POST scan data to us
 const server = http.createServer((req, res) => {
+    if (req.method === "GET" && req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: "Server is running" }));
+    }
     // Only accept POST to /broadcast
     if (req.method === 'POST' && req.url === '/broadcast') {
         let body = '';
@@ -51,7 +55,8 @@ wss.on('connection', function connection(ws) {
 });
 
 // We listen on 8765, which matches our `ws://localhost:8765` frontend connection
-const PORT = 8765;
+// We listen on 8765 locally, or the PORT provided by Render
+const PORT = process.env.PORT || 8765;
 server.listen(PORT, () => {
     console.log(`🚀 WebSocket server running on ws://localhost:${PORT}`);
     console.log(`📡 HTTP Broadcast endpoint listening on http://localhost:${PORT}/broadcast`);
