@@ -1,0 +1,61 @@
+'use client';
+
+import { useState } from 'react';
+
+const DEFAULT_PI_IP = process.env.NEXT_PUBLIC_PI_IP || '192.168.1.100';
+
+export default function LiveFeed() {
+    const [piIp, setPiIp] = useState(DEFAULT_PI_IP);
+    const [inputIp, setInputIp] = useState(DEFAULT_PI_IP);
+    const [imgError, setImgError] = useState(false);
+
+    const feedUrl = `http://${piIp}:5000/video`;
+
+    const handleConnect = (e) => {
+        e.preventDefault();
+        setImgError(false);
+        setPiIp(inputIp.trim());
+    };
+
+    return (
+        <div className="glass-panel live-feed-card">
+            <div className="card-header">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span className="live-dot"></span>
+                    <h2>Live Camera Feed</h2>
+                </div>
+                <form onSubmit={handleConnect} className="pi-ip-form">
+                    <input
+                        type="text"
+                        value={inputIp}
+                        onChange={e => setInputIp(e.target.value)}
+                        placeholder="Raspberry Pi IP"
+                        className="pi-ip-input"
+                    />
+                    <button type="submit" className="pi-connect-btn">Connect</button>
+                </form>
+            </div>
+
+            <div className="live-feed-wrapper">
+                {imgError ? (
+                    <div className="feed-offline">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                        <p>Camera offline</p>
+                        <span>Enter Pi IP above and click Connect</span>
+                    </div>
+                ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                        src={feedUrl}
+                        alt="Live Raspberry Pi MJPEG stream"
+                        className="live-feed-img"
+                        onError={() => setImgError(true)}
+                    />
+                )}
+            </div>
+        </div>
+    );
+}

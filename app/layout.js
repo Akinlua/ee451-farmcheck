@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-    title: 'Plant Health Scanner',
-    description: 'Real-time plant disease detection dashboard via Raspberry Pi',
+    title: 'FarmCheck Dashboard',
+    description: 'Real-time poultry disease detection dashboard via Raspberry Pi',
 };
 
 export default function RootLayout({ children }) {

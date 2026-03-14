@@ -20,6 +20,24 @@ export function WebSocketProvider({ children }) {
     const demoIntervalRef = useRef(null);
     const DEFAULT_WS_URL = 'ws://localhost:8765';
 
+    // Fetch initial history from DB on mount
+    useEffect(() => {
+        fetch('/api/history')
+            .then(r => r.json())
+            .then(data => {
+                if (data.history && data.history.length > 0) {
+                    // Normalise DB records: they use `disease`, WS messages use `result`
+                    const normalised = data.history.map(s => ({
+                        ...s,
+                        result: s.disease ?? s.result,
+                    }));
+                    setScanHistory(normalised);
+                    setLatestScan(normalised[0]);
+                }
+            })
+            .catch(err => console.error('Failed to load history:', err));
+    }, []);
+
     const connect = useCallback((url = DEFAULT_WS_URL) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
@@ -34,20 +52,21 @@ export function WebSocketProvider({ children }) {
             };
 
             ws.onmessage = (event) => {
-                if (isDemoMode) return; // Ignore real websocket messages in demo mode
+                if (isDemoMode) return;
 
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.image && data.result) {
-                        const scanData = {
-                            ...data,
-                            id: Date.now().toString(),
-                            timestamp: new Date().toISOString()
-                        };
 
-                        setLatestScan(scanData);
-                        setScanHistory(prev => [scanData, ...prev].slice(0, 50));
-                    }
+                    // Normalise: DB records use `disease`, demo uses `result`
+                    const scanData = {
+                        ...data,
+                        result: data.disease ?? data.result,
+                        id: data.id ?? Date.now().toString(),
+                        timestamp: data.timestamp ?? new Date().toISOString(),
+                    };
+
+                    setLatestScan(scanData);
+                    setScanHistory(prev => [scanData, ...prev].slice(0, 50));
                 } catch (error) {
                     console.error('Error parsing WebSocket message:', error);
                 }
@@ -95,15 +114,17 @@ export function WebSocketProvider({ children }) {
 
             const simulateScan = () => {
                 const item = demoImages[index % demoImages.length];
-                const isHealthy = item.result === 'disease-free';
+                const isHealthy = item.result === 'Healthy';
                 const confidence = isHealthy ? 0.92 + Math.random() * 0.07 : 0.70 + Math.random() * 0.25;
 
                 const scanData = {
                     imageUrl: item.url,
+                    image: null,
                     result: item.result,
-                    confidence: confidence,
+                    disease: item.result,
+                    confidence,
                     id: Date.now().toString(),
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
                 };
 
                 setLatestScan(scanData);
@@ -113,7 +134,6 @@ export function WebSocketProvider({ children }) {
 
             simulateScan();
             demoIntervalRef.current = setInterval(simulateScan, 4000);
-
         } else {
             if (demoIntervalRef.current) clearInterval(demoIntervalRef.current);
             if (wsRef.current?.readyState === WebSocket.OPEN) {
