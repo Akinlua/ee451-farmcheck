@@ -9,7 +9,11 @@ export default function LiveFeed() {
     const [inputUrl, setInputUrl] = useState(DEFAULT_FEED_URL);
     const [imgError, setImgError] = useState(false);
 
-    const feedUrl = `${baseUrl}/video`;
+    // Robust URL construction
+    const cleanedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+    const feedUrl = cleanedBaseUrl.endsWith('/video') 
+        ? cleanedBaseUrl 
+        : `${cleanedBaseUrl}/video`;
 
     const handleConnect = (e) => {
         e.preventDefault();
