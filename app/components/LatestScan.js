@@ -24,7 +24,16 @@ export default function LatestScan({ scan }) {
     const isHealthy = (scan.disease ?? scan.result)?.toLowerCase() === 'healthy' || (scan.disease ?? scan.result)?.toLowerCase() === 'disease-free';
     const label = scan.disease ?? scan.result;
     const confidence = Math.round((scan.confidence || 0) * 100);
-    const imageSrc = scan.imageUrl || (scan.image ? `data:image/jpeg;base64,${scan.image}` : null);
+
+    // Robust image source determination
+    let imageSrc = scan.imageUrl || null;
+    if (!imageSrc && scan.image) {
+        if (scan.image.startsWith('data:') || scan.image.startsWith('http')) {
+            imageSrc = scan.image;
+        } else {
+            imageSrc = `data:image/jpeg;base64,${scan.image}`;
+        }
+    }
 
     const ts = scan.timestamp ? new Date(scan.timestamp).toLocaleTimeString([], {
         hour: '2-digit', minute: '2-digit', second: '2-digit'

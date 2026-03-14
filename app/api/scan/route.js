@@ -7,8 +7,18 @@ export async function POST(req) {
         const { image, disease, confidence } = body;
 
         const db = await getDb();
+
+        // Normalize image: if it starts with data:image/..., strip the prefix to save only raw base64
+        let normalizedImage = image;
+        if (typeof image === 'string' && image.startsWith('data:image/')) {
+            const parts = image.split(',');
+            if (parts.length > 1) {
+                normalizedImage = parts[1];
+            }
+        }
+
         const scan = {
-            image,
+            image: normalizedImage,
             disease,
             confidence: parseFloat(confidence),
             timestamp: new Date()
