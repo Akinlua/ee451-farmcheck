@@ -2,19 +2,19 @@
 
 import { useState } from 'react';
 
-const DEFAULT_PI_IP = process.env.NEXT_PUBLIC_PI_IP || '192.168.1.100';
+const DEFAULT_FEED_URL = process.env.NEXT_PUBLIC_FEED_URL || 'http://localhost:5000';
 
 export default function LiveFeed() {
-    const [piIp, setPiIp] = useState(DEFAULT_PI_IP);
-    const [inputIp, setInputIp] = useState(DEFAULT_PI_IP);
+    const [baseUrl, setBaseUrl] = useState(DEFAULT_FEED_URL);
+    const [inputUrl, setInputUrl] = useState(DEFAULT_FEED_URL);
     const [imgError, setImgError] = useState(false);
 
-    const feedUrl = `http://${piIp}:5000/video`;
+    const feedUrl = `${baseUrl}/video`;
 
     const handleConnect = (e) => {
         e.preventDefault();
         setImgError(false);
-        setPiIp(inputIp.trim());
+        setBaseUrl(inputUrl.trim());
     };
 
     return (
@@ -27,9 +27,9 @@ export default function LiveFeed() {
                 <form onSubmit={handleConnect} className="pi-ip-form">
                     <input
                         type="text"
-                        value={inputIp}
-                        onChange={e => setInputIp(e.target.value)}
-                        placeholder="Raspberry Pi IP"
+                        value={inputUrl}
+                        onChange={e => setInputUrl(e.target.value)}
+                        placeholder="Camera Feed URL (e.g. http://localhost:5000)"
                         className="pi-ip-input"
                     />
                     <button type="submit" className="pi-connect-btn">Connect</button>
@@ -44,7 +44,7 @@ export default function LiveFeed() {
                             <line x1="1" y1="1" x2="23" y2="23" />
                         </svg>
                         <p>Camera offline</p>
-                        <span>Enter Pi IP above and click Connect</span>
+                        <span>Enter Feed URL above and click Connect</span>
                     </div>
                 ) : (
                     /* eslint-disable-next-line @next/next/no-img-element */
